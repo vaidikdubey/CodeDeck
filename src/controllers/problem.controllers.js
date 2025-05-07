@@ -238,7 +238,7 @@ export const updateProblem = async (req, res) => {
             return res.status(201).json({
                 success: true,
                 message: "Problem updated successfully",
-                problem: newProblem
+                problem: updatedProblem
             });
         }
     } catch (error) {
@@ -290,5 +290,5 @@ export const deleteProblem = async (req, res) => {
 };
 
 export const getAllProblemsSolvedByUser = async (req, res) => {
-    
+
 };
