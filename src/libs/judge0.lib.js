@@ -24,7 +24,7 @@ export const pollBatchResults = async (tokens) => {
         const results = data.submissions;
 
         const isAllDone = results.every(
-            (result) => result.status_id !== 1 && result.status_id !== 2
+            (result) => result.status.id !== 1 && result.status.id !== 2
         )
 
         if (isAllDone) return results;
@@ -39,7 +39,7 @@ export const submitBatch = async (submissions) => {
         submissions
     })
 
-    console.log("Submissions Results: ", data);
+    console.log("Submissions Results (Token from Judge0): ", data);
 
     return data; //[{token}, {token}, {token}]
 }
