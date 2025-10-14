@@ -32,3 +32,5 @@ Thumbs.db
 
 # Optional: Jest or test coverage
 coverage/
+
+/src/generated/prisma
