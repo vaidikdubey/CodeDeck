@@ -14,10 +14,14 @@ const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 
 export const pollBatchResults = async (tokens) => {
     while (true) {
-        const { data } = await axios.get(`${process.env.JUDGE0_API_URL}/submissions/batch`, {
+        const { data } = await axios.get(`${process.env.RAPIDAPI_JUDGE0_API_URL}/submissions/batch`, {
             params: {
                 tokens: tokens.join(","),
                 base64_encoded: false,
+            },
+            headers: {
+                'x-rapidapi-key': process.env.X_RAPIDAPI_KEY,
+                'x-rapidapi-host': process.env.X_RAPIDAPI_HOST
             }
         })
 
@@ -33,7 +37,16 @@ export const pollBatchResults = async (tokens) => {
 }
 
 export const submitBatch = async (submissions) => {
-    const { data } = await axios.post(`${process.env.JUDGE0_API_URL}/submissions/batch?base64_encoded=false`, { submissions });
+    const { data } = await axios.post(`${process.env.RAPIDAPI_JUDGE0_API_URL}/submissions/batch?base64_encoded=false`,
+        { submissions },
+        {
+            headers: {
+                'x-rapidapi-key': process.env.X_RAPIDAPI_KEY,
+                'x-rapidapi-host': process.env.X_RAPIDAPI_HOST,
+                'Content-Type': 'application/json'
+            }
+        }
+    );
 
     console.log("Submission Results [Tokens from Judge0]: ", data);
 
