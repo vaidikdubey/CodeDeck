@@ -101,12 +101,205 @@ export const createProblem = async (req, res) => {
   }
 };
 
-export const getAllProblems = async (req, res) => {};
+export const getAllProblems = async (req, res) => {
+  try {
+    const problems = await db.problem.findMany();
 
-export const getProblemById = async (req, res) => {};
+    if (!problems) {
+      return res.status(404).json({
+        error: "No problems found",
+      });
+    }
 
-export const updateProblem = async (req, res) => {};
+    res.status(200).json({
+      success: true,
+      message: "Problems fetched successfully",
+      problems,
+    });
+  } catch (error) {
+    console.error("Error fetching all problems: ", error);
+    res.status(500).json({
+      error: "Error fetching all problems",
+    });
+  }
+};
 
-export const deleteProblem = async (req, res) => {};
+export const getProblemById = async (req, res) => {
+  const { id } = req.params;
+
+  try {
+    const problem = db.problem.findUnique({
+      where: {
+        id,
+      },
+    });
+
+    if (!problem) {
+      return res.status(404).json({
+        error: "Problem not found",
+      });
+    }
+
+    res.status(200).json({
+      success: true,
+      message: "Problem fetched successfully",
+      problem,
+    });
+  } catch (error) {
+    console.error("Error fetching problem by id: ", error);
+    res.status(500).json({
+      error: "Error fetching problem by id",
+    });
+  }
+};
+
+export const updateProblem = async (req, res) => {
+  //find problem by id -> check
+  //same as create problem
+  //instead of create use update with where: id
+
+  const { id } = req.params;
+
+  if (req.user.role !== "ADMIN") {
+    return res.status(403).json({
+      error: "You are not allowed to update problem",
+    });
+  }
+
+  try {
+    const problem = await db.problem.findUnique({
+      where: {
+        id,
+      },
+    });
+
+    if (!problem) {
+      return res.status(404).json({
+        error: "Problem not found to update",
+      });
+    }
+
+    const {
+      title,
+      description,
+      difficulty,
+      tags,
+      examples,
+      constraints,
+      testcases,
+      codeSnippets,
+      referenceSolutions,
+    } = req.body;
+
+    //bug - update for case where these fields are not provided, partially updated
+    for (const [language, solutionCode] of Object.entries(referenceSolutions)) {
+      const languageId = getJudge0LanguageId(language);
+
+      if (!languageId) {
+        return res.status(400).json({
+          error: `Language ${language} is not supported`,
+        });
+      }
+
+      const submissions = testcases.map(({ input, output }) => ({
+        language_id: languageId,
+        source_code: solutionCode,
+        stdin: input,
+        expected_output: output,
+      }));
+
+      const submissionResults = await submitBatch(submissions);
+
+      const tokens = submissionResults.map((response) => response.token);
+
+      const results = await pollBatchResults(tokens);
+
+      for (let i = 0; i < results.length; i++) {
+        const result = results[i];
+
+        console.log("Updated result after polling: ", result);
+
+        if (result.status.id !== 3) {
+          return res.status(400).json({
+            error: `Testcase ${i + 1} failed for language ${language}`,
+          });
+        }
+      }
+    }
+
+    //avoid overwriting and removing existing fields which are not present
+    const dataToUpdate = {
+      ...(title && { title }),
+      ...(description && { description }),
+      ...(difficulty && { difficulty }),
+      ...(tags && { tags }),
+      ...(examples && { examples }),
+      ...(constraints && { constraints }),
+      ...(testcases && { testcases }),
+      ...(codeSnippets && { codeSnippets }),
+      ...(referenceSolutions && { referenceSolutions }),
+      userId: req.user.id,
+    };
+
+    //update db
+    const updatedProblem = await db.problem.update({
+      where: {
+        id,
+      },
+      data: dataToUpdate,
+    });
+
+    return res.status(200).json({
+      success: true,
+      message: "Problem updated successfully",
+      problem: updatedProblem,
+    });
+  } catch (error) {
+    console.error("Error updating problem: ", error);
+    res.status(500).json({
+      error: "Error updating problem",
+    });
+  }
+};
+
+export const deleteProblem = async (req, res) => {
+  const { id } = req.params;
+
+  if (req.user.role !== "ADMIN") {
+    return res.status(403).json({
+      error: "You are not authorized to delete this problem",
+    });
+  }
+
+  try {
+    const problem = await db.problem.findUnique({
+      where: {
+        id,
+      },
+    });
+
+    if (!problem) {
+      return res.status(404).json({
+        error: "Problem not found",
+      });
+    }
+
+    await db.problem.delete({
+      where: {
+        id,
+      },
+    });
+
+    return res.status(200).json({
+      success: true,
+      message: "Problem deleted successfully",
+    });
+  } catch (error) {
+    console.error("Error deleting problem by id: ", error);
+    res.status(500).json({
+      error: "Error deleting problem by id",
+    });
+  }
+};
 
 export const getAllProblemsSolvedByUser = async (req, res) => {};
