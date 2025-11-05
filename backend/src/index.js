@@ -1,7 +1,7 @@
 import express, { urlencoded } from "express";
 import dotenv from "dotenv";
 import cookieParser from "cookie-parser";
-
+import cors from "cors";
 
 //import custom routes
 import authRoutes from "./routes/auth.routes.js";
@@ -16,11 +16,17 @@ const app = express();
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
-app.use(cookieParser())
+app.use(cookieParser());
+app.use(
+  cors({
+    origin: process.env.FRONTEND_URL,
+    credentials: true,
+  }),
+);
 
 app.get("/", (req, res) => {
-    res.send("Hello, welcome to CodeDeck🔥")
-})
+  res.send("Hello, welcome to CodeDeck🔥");
+});
 
 app.use("/api/v1/auth", authRoutes);
 app.use("/api/v1/problems", problemRoutes);
@@ -31,5 +37,5 @@ app.use("/api/v1/playlist", playlistRoutes);
 const PORT = process.env.PORT || 8080;
 
 app.listen(PORT, () => {
-    console.log(`Server is running on port ${PORT}`);
-})
+  console.log(`Server is running on port ${PORT}`);
+});
