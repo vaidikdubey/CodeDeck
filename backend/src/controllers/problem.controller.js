@@ -136,7 +136,7 @@ export const getProblemById = async (req, res) => {
   const { id } = req.params;
 
   try {
-    const problem = db.problem.findUnique({
+    const problem = await db.problem.findUnique({
       where: {
         id,
       },
