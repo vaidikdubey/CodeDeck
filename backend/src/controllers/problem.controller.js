@@ -103,7 +103,15 @@ export const createProblem = async (req, res) => {
 
 export const getAllProblems = async (req, res) => {
   try {
-    const problems = await db.problem.findMany();
+    const problems = await db.problem.findMany({
+      include: {
+        solvedBy: {
+          where: {
+            userId: req.user.id,
+          },
+        },
+      },
+    });
 
     if (!problems) {
       return res.status(404).json({
@@ -308,28 +316,28 @@ export const getAllProblemsSolvedByUser = async (req, res) => {
       where: {
         solvedBy: {
           some: {
-            userId: req.user.id
-          }
-        }
+            userId: req.user.id,
+          },
+        },
       },
       include: {
         solvedBy: {
           where: {
-            userId: req.user.id
-          }
-        }
-      }
-    })
+            userId: req.user.id,
+          },
+        },
+      },
+    });
 
     res.status(200).json({
       success: true,
       message: "Problems fetched successfully",
-      problems
-    })
+      problems,
+    });
   } catch (error) {
     console.error("Error fetching solved problems: ", error);
     res.status(500).json({
-      error: "Error fetching solved problems by user"
-    })
+      error: "Error fetching solved problems by user",
+    });
   }
 };
