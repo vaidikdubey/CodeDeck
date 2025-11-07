@@ -1,7 +1,15 @@
 import React, { useState, useMemo } from "react";
 import { useAuthStore } from "../store/useAuthStore";
 import { Link } from "react-router-dom";
-import { Bookmark, PencilIcon, Trash, TrashIcon, Plus } from "lucide-react";
+import {
+    Bookmark,
+    PencilIcon,
+    Trash,
+    TrashIcon,
+    Plus,
+    Loader2,
+} from "lucide-react";
+import { useActions } from "../store/useAction";
 
 const ProblemTable = ({ problems }) => {
     const { authUser } = useAuthStore();
@@ -11,6 +19,8 @@ const ProblemTable = ({ problems }) => {
     const [difficulty, setDifficulty] = useState("ALL");
     const [selectedTag, setSelectedTag] = useState("ALL");
     const [currentPage, setCurrentPage] = useState(1);
+
+    const { isDeletingProblem, onDeleteProblem } = useActions();
 
     const allTags = useMemo(() => {
         if (!Array.isArray(problems)) return [];
@@ -50,7 +60,9 @@ const ProblemTable = ({ problems }) => {
 
     const difficulties = ["EASY", "MEDIUM", "HARD"];
 
-    const handleDelete = (id) => {};
+    const handleDelete = (id) => {
+        onDeleteProblem(id);
+    };
 
     const handleAddToPlaylist = (id) => {};
 
@@ -179,7 +191,11 @@ const ProblemTable = ({ problems }) => {
                                                             }
                                                             className="btn btn-sm btn-error"
                                                         >
-                                                            <TrashIcon className="w-4 h-4 text-white" />
+                                                            {isDeletingProblem ? (
+                                                                <Loader2 className="animate-spin h-4 w-4" />
+                                                            ) : (
+                                                                <TrashIcon className="w-4 h-4 text-white" />
+                                                            )}
                                                         </button>
                                                         <button
                                                             disabled
