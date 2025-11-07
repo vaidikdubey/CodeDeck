@@ -29,7 +29,7 @@ export const getSubmissionsForProblem = async (req, res) => {
 
         const { problemId } = req.params;
 
-        const submissions = await db.submission.findMany({
+        const submission = await db.submission.findMany({
             where: {
                 userId,
                 problemId
@@ -39,7 +39,7 @@ export const getSubmissionsForProblem = async (req, res) => {
         res.status(200).json({
             success: true,
             message: "Submission for problem fetched successfully",
-            submissions
+            submission
         })
     } catch (error) {
         console.error("Errro fetching submissions by id: ", error)

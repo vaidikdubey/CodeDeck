@@ -21,6 +21,7 @@ import {
 import { useProblemStore } from "../store/useProblemStore";
 import { useExecutionStore } from "../store/useExecutionStore";
 import { getLanguageId } from "../lib/lang";
+import { useSubmissionStore } from "../store/useSubmissionStore";
 import SubmissionResults from "../components/Submission";
 import SubmissionsList from "../components/SubmissionList";
 
@@ -28,6 +29,13 @@ const ProblemPage = () => {
     const { id } = useParams(); //To get id from params
 
     const { getProblemById, problem, isProblemLoading } = useProblemStore();
+    const {
+        submission: submissions,
+        isLoading: isSubmissionsLoading,
+        getSubmissionForProblem,
+        getSubmissionCountForProblem,
+        submissionCount,
+    } = useSubmissionStore();
     const [code, setCode] = useState("");
     const [activeTab, setActiveTab] = useState("description");
     const [selectedLanguage, setSelectedLanguage] = useState("javascript");
@@ -36,14 +44,11 @@ const ProblemPage = () => {
 
     const { executeCode, submission, isExecuting } = useExecutionStore();
 
-    const submissionCount = 10;
-
     useEffect(() => {
         getProblemById(id);
+        getSubmissionCountForProblem(id);
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [id]);
-
-    console.log(problem);
 
     useEffect(() => {
         if (problem) {
@@ -58,11 +63,35 @@ const ProblemPage = () => {
         }
     }, [problem, selectedLanguage]);
 
+    useEffect(() => {
+        if (activeTab === "submissions" && id) {
+            getSubmissionForProblem(id);
+        }
+    }, [activeTab, id]);
+
     const handleLanguageChange = (e) => {
         const lang = e.target.value;
         setSelectedLanguage(lang);
         setCode(problem.codeSnippets?.[lang] || []);
     };
+
+    const handleRunCode = (e) => {
+        e.preventDefault();
+        try {
+            const language_id = getLanguageId(selectedLanguage);
+            const stdin = problem.testcases.map((tc) => tc.input);
+            const expected_outputs = problem.testcases.map((tc) => tc.output);
+
+            executeCode(code, language_id, stdin, expected_outputs, id);
+        } catch (error) {
+            console.log("Error executing code", error);
+        }
+    };
+
+    if (!problem) {
+        console.log("⏳ Problem not yet loaded");
+        return <div>Loading problem...</div>;
+    }
 
     const renderTabContent = () => {
         switch (activeTab) {
@@ -130,16 +159,11 @@ const ProblemPage = () => {
                 );
             case "submissions":
                 return (
-                    <div className="p-4 text-center text-base-content/70">
-                        No submissions yet
-                    </div>
+                    <SubmissionsList
+                        submissions={submissions}
+                        isLoading={isSubmissionsLoading}
+                    />
                 );
-            // return (
-            //     <SubmissionsList
-            //         submissions={submissions}
-            //         isLoading={isSubmissionsLoading}
-            //     />
-            // );
             case "discussion":
                 return (
                     <div className="p-4 text-center text-base-content/70">
@@ -167,21 +191,8 @@ const ProblemPage = () => {
         }
     };
 
-    const handleRunCode = (e) => {
-        e.preventDefault();
-        try {
-            const language_id = getLanguageId(selectedLanguage);
-            const stdin = problem.testcases.map((tc) => tc.input);
-            const expected_outputs = problem.testcases.map((tc) => tc.output);
-
-            executeCode(code, language_id, stdin, expected_outputs, id);
-        } catch (error) {
-            console.log("Error executing code", error);
-        }
-    };
-
     return (
-        <div className="min-h-screen bg-linear-to-br from-base-300 to-base-200">
+        <div className="min-h-screen bg-linear-to-br from-base-300 to-base-200 max-w-7xl w-full">
             <nav className="navbar bg-base-100 shadow-lg px-4">
                 <div className="flex-1 gap-2">
                     <Link
