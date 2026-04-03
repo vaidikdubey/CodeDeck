@@ -11,7 +11,6 @@ pnpm-debug.log*
 .env
 
 # Prisma
-prisma/migrations/
 prisma/dev.db
 
 # Build output (if any)
