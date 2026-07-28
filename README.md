@@ -107,7 +107,5 @@ Contributions are welcome! Please follow these steps:
 For any queries or issues, contact:
 
 * **Name:** Vaidik Dubey
-* **Email:** [Vaidik Dubey](mailto:vaidik26dubey@gmail.com)
 * **LinkedIn:** [linkedin.com/in/vaidik-dubey](https://www.linkedin.com/in/vaidik-dubey/)
-* **GitHub:** [github.com/vaidikdubey](https://github.com/vaidikdubey)
 * **X (Twitter):** [x.com/vaidik_26](https://x.com/vaidik_26)
